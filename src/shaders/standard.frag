@@ -6,6 +6,9 @@ precision mediump float;
 uniform sampler2D u_image0;
 uniform sampler2D u_image1;
 uniform sampler2D u_image2;
+uniform sampler2D u_image3;
+uniform sampler2D u_image4;
+uniform sampler2D u_image5;
 
 // the texCoords passed in from the vertex shader.
 varying vec2 v_texCoord;
@@ -71,11 +74,24 @@ void main() {
 
   vec2 centeringOffset = vec2(0.5, 0.5);
 
-  if (st.i_s == 0 || st.i_s == 3) {
-    gl_FragColor = texture2D(u_image0, st.uv / vec2(2.0, 2.0) + centeringOffset, 1.0);
-  } else if (st.i_s == 1 || st.i_s == 4) {
-    gl_FragColor = texture2D(u_image1, st.uv / vec2(2.0, 2.0) + centeringOffset, 1.0);
+  vec2 uv = st.uv;
+  float m = 0.0;
+  if (st.i_s == 0) {
+    gl_FragColor = texture2D(u_image0, uv / vec2(2.0, 2.0) + centeringOffset, 1.0);
+  } else if (st.i_s == 1) {
+    uv = vec2(m - uv.x, uv.y);
+    gl_FragColor = texture2D(u_image1, uv / vec2(2.0, 2.0) + centeringOffset, 1.0);
+  } else if (st.i_s == 2) {
+    uv = vec2(uv.y, m - uv.x);
+    gl_FragColor = texture2D(u_image2, uv / vec2(2.0, 2.0) + centeringOffset, 1.0);
+  } else if (st.i_s == 3) {
+    uv = vec2(uv.x, m - uv.y);
+    gl_FragColor = texture2D(u_image3, uv / vec2(2.0, 2.0) + centeringOffset, 1.0);
+  } else if (st.i_s == 4) {
+    uv = vec2(m - uv.x, m - uv.y);
+    gl_FragColor = texture2D(u_image4, uv / vec2(2.0, 2.0) + centeringOffset, 1.0);
   } else {
-    gl_FragColor = texture2D(u_image2, st.uv / vec2(2.0, 2.0) + centeringOffset, 1.0);
+    uv = vec2(m - uv.y, m - uv.x);
+    gl_FragColor = texture2D(u_image5, uv / vec2(2.0, 2.0) + centeringOffset, 1.0);
   }
 }

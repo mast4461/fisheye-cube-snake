@@ -14,9 +14,12 @@ import { loadShader, createProgram, resizeCanvasToDisplaySize } from '../scripts
 import fragmentShaderSource from '../shaders/standard.frag';
 import vertexShaderSource from '../shaders/standard.vert';
 
-import leafImagePath from '../assets/leaves.jpg';
-import starImagePath from '../assets/star.jpg';
-import prodImagePath from '../assets/product.png';
+import topImagePath from '../assets/top.png';
+import leftImagePath from '../assets/left.png';
+import frontImagePath from '../assets/front.png';
+import rightImagePath from '../assets/right.png';
+import backImagePath from '../assets/back.png';
+import bottomImagePath from '../assets/bottom.png';
 
 function setRectangle(gl) {
   const x1 = -1;
@@ -103,6 +106,9 @@ function main(gl, images) {
   const u_image0Location = gl.getUniformLocation(program, 'u_image0');
   const u_image1Location = gl.getUniformLocation(program, 'u_image1');
   const u_image2Location = gl.getUniformLocation(program, 'u_image2');
+  const u_image3Location = gl.getUniformLocation(program, 'u_image3');
+  const u_image4Location = gl.getUniformLocation(program, 'u_image4');
+  const u_image5Location = gl.getUniformLocation(program, 'u_image5');
 
   resizeCanvasToDisplaySize(gl.canvas);
 
@@ -146,6 +152,9 @@ function main(gl, images) {
   gl.uniform1i(u_image0Location, 0);  // texture unit 0
   gl.uniform1i(u_image1Location, 1);  // texture unit 1
   gl.uniform1i(u_image2Location, 2);  // texture unit 2
+  gl.uniform1i(u_image3Location, 3);  // texture unit 3
+  gl.uniform1i(u_image4Location, 4);  // texture unit 4
+  gl.uniform1i(u_image5Location, 5);  // texture unit 5
 
   // Set each texture unit to use a particular texture.
   gl.activeTexture(gl.TEXTURE0);
@@ -154,6 +163,12 @@ function main(gl, images) {
   gl.bindTexture(gl.TEXTURE_2D, textures[1]);
   gl.activeTexture(gl.TEXTURE2);
   gl.bindTexture(gl.TEXTURE_2D, textures[2]);
+  gl.activeTexture(gl.TEXTURE3);
+  gl.bindTexture(gl.TEXTURE_2D, textures[3]);
+  gl.activeTexture(gl.TEXTURE4);
+  gl.bindTexture(gl.TEXTURE_2D, textures[4]);
+  gl.activeTexture(gl.TEXTURE5);
+  gl.bindTexture(gl.TEXTURE_2D, textures[5]);
 
   // Draw the rectangle.
   gl.drawArrays(gl.TRIANGLES, 0, 6);
@@ -161,7 +176,15 @@ function main(gl, images) {
 
 export default {
   mounted() {
-    const imagePaths = [leafImagePath, starImagePath, prodImagePath];
+    const imagePaths = [
+      frontImagePath,
+      rightImagePath,
+      bottomImagePath,
+      backImagePath,
+      leftImagePath,
+      topImagePath,
+    ];
+
     Promise.all(imagePaths.map(loadImage)).then((images) => {
       const gl = this.$el.getContext('webgl');
       main(gl, images);
