@@ -16,12 +16,13 @@ import vertexShaderSource from '../shaders/standard.vert';
 
 import leafImagePath from '../assets/leaves.jpg';
 import starImagePath from '../assets/star.jpg';
+import prodImagePath from '../assets/product.png';
 
-function setRectangle(gl, x, y, width, height) {
-  const x1 = x;
-  const x2 = x + width;
-  const y1 = y;
-  const y2 = y + height;
+function setRectangle(gl) {
+  const x1 = -1;
+  const x2 = 1;
+  const y1 = -1;
+  const y2 = 1;
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
     x1, y1,
     x2, y1,
@@ -59,23 +60,26 @@ function main(gl, images) {
   // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   // Set a rectangle the same size as the image.
-  setRectangle(gl, 0, 0, images[0].width, images[0].height);
+  setRectangle(gl);
 
   // provide texture coordinates for the rectangle.
   const texcoordBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
+
+  const a = -1;
+  const b = 1;
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-    0.0, 0.0,
-    1.0, 0.0,
-    0.0, 1.0,
-    0.0, 1.0,
-    1.0, 0.0,
-    1.0, 1.0,
+    a, a,
+    b, a,
+    a, b,
+    a, b,
+    b, a,
+    b, b,
   ]), gl.STATIC_DRAW);
 
-  // create 2 textures
+  // create n textures
   const textures = [];
-  for (let ii = 0; ii < 2; ii += 1) {
+  for (let ii = 0; ii < images.length; ii += 1) {
     const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -98,6 +102,7 @@ function main(gl, images) {
   // lookup the sampler locations.
   const u_image0Location = gl.getUniformLocation(program, 'u_image0');
   const u_image1Location = gl.getUniformLocation(program, 'u_image1');
+  const u_image2Location = gl.getUniformLocation(program, 'u_image2');
 
   resizeCanvasToDisplaySize(gl.canvas);
 
@@ -140,12 +145,15 @@ function main(gl, images) {
   // set which texture units to render with.
   gl.uniform1i(u_image0Location, 0);  // texture unit 0
   gl.uniform1i(u_image1Location, 1);  // texture unit 1
+  gl.uniform1i(u_image2Location, 2);  // texture unit 2
 
   // Set each texture unit to use a particular texture.
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, textures[0]);
   gl.activeTexture(gl.TEXTURE1);
   gl.bindTexture(gl.TEXTURE_2D, textures[1]);
+  gl.activeTexture(gl.TEXTURE2);
+  gl.bindTexture(gl.TEXTURE_2D, textures[2]);
 
   // Draw the rectangle.
   gl.drawArrays(gl.TRIANGLES, 0, 6);
@@ -153,7 +161,7 @@ function main(gl, images) {
 
 export default {
   mounted() {
-    const imagePaths = [leafImagePath, starImagePath];
+    const imagePaths = [leafImagePath, starImagePath, prodImagePath];
     Promise.all(imagePaths.map(loadImage)).then((images) => {
       const gl = this.$el.getContext('webgl');
       main(gl, images);
