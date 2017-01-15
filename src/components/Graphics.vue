@@ -4,6 +4,11 @@
 
 <script>
 /* eslint-disable camelcase, max-len */
+
+/**
+ * Based on http://webglfundamentals.org/webgl/lessons/webgl-2-textures.html
+ */
+
 import { loadShader, createProgram, resizeCanvasToDisplaySize } from '../scripts/webgl-utils-remix';
 
 import fragmentShaderSource from '../shaders/standard.frag';
