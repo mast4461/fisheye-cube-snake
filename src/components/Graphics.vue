@@ -72,7 +72,7 @@ function getReferenceSystem(v1t) {
   return { v1, v2, v3 };
 }
 
-function initializeGpu(gl, images) {
+function initializeGpu(gl, cubeMapSides) {
   const fs = loadShader(gl, fragmentShaderSource, gl.FRAGMENT_SHADER);
   const vs = loadShader(gl, vertexShaderSource, gl.VERTEX_SHADER);
 
@@ -108,28 +108,22 @@ function initializeGpu(gl, images) {
     b, b,
   ]), gl.STATIC_DRAW);
 
-  // create n textures
-  images.forEach((image, i) => {
-    const texture = gl.createTexture();
-    gl.activeTexture(gl.TEXTURE0 + i);
-    gl.bindTexture(gl.TEXTURE_2D, texture);
+  // START CUBEMAP
+  const cubeMapTexture = gl.createTexture();
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubeMapTexture);
 
-    // Set the parameters so we can render any size image.
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-    // Upload the image into the texture.
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-
-    // lookup the sampler location.
-    const u_imageiLocation = gl.getUniformLocation(program, `u_image${i}`);
-
-    // set which texture units to render with.
-    gl.uniform1i(u_imageiLocation, i);  // texture unit i
+  cubeMapSides.forEach((side) => {
+    gl.texImage2D(side[0], 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, side[1]);
   });
 
+  gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+  const u_cubeMapLocation = gl.getUniformLocation(program, 'u_cubeMap');
+  gl.uniform1i(u_cubeMapLocation, 0);
+  // END CUBEMAP
 
   // Tell it to use our program (pair of shaders)
   gl.useProgram(program);
@@ -193,19 +187,22 @@ function draw(gl, program, time) {
 
 export default {
   mounted() {
-    const imagePaths = [
-      frontImagePath,
-      rightImagePath,
-      bottomImagePath,
-      backImagePath,
-      leftImagePath,
-      topImagePath,
+    const gl = this.$el.getContext('webgl');
+
+    const cubeMapSides = [
+      [gl.TEXTURE_CUBE_MAP_NEGATIVE_X, leftImagePath],
+      [gl.TEXTURE_CUBE_MAP_POSITIVE_X, rightImagePath],
+      [gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, bottomImagePath],
+      [gl.TEXTURE_CUBE_MAP_POSITIVE_Y, topImagePath],
+      [gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, backImagePath],
+      [gl.TEXTURE_CUBE_MAP_POSITIVE_Z, frontImagePath],
     ];
 
-    Promise.all(imagePaths.map(loadImage)).then((images) => {
-      const gl = this.$el.getContext('webgl');
+    Promise.all(cubeMapSides.map(side => loadImage(side[1]))).then((images) => {
+      const loadedCubeMapSides = cubeMapSides.map((side, i) => [side[0], images[i]]);
 
-      const program = initializeGpu(gl, images);
+      const program = initializeGpu(gl, loadedCubeMapSides);
+
       const repeatDraw = (time) => {
         draw(gl, program, time * 1e-3);
         requestAnimationFrame(repeatDraw);

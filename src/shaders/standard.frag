@@ -3,12 +3,7 @@
 precision mediump float;
 
 // our textures
-uniform sampler2D u_image0;
-uniform sampler2D u_image1;
-uniform sampler2D u_image2;
-uniform sampler2D u_image3;
-uniform sampler2D u_image4;
-uniform sampler2D u_image5;
+uniform samplerCube u_cubeMap;
 
 uniform vec3 u_v1;
 uniform vec3 u_v2;
@@ -21,38 +16,6 @@ struct SamplingTarget {
   int i_s;
   vec2 uv;
 };
-
-SamplingTarget xyz_to_uv(vec3 v) {
-  vec3 av = abs(v);
-  vec2 uv;
-  int i_s;
-
-  if (av.x >= av.y && av.x >= av.z) {
-    if (av.x == v.x) {
-      i_s = 0;
-    } else {
-      i_s = 3;
-    }
-    uv = vec2(v.y / v.x, v.z / v.x);
-  } else if (av.y >= av.x && av.y >= av.z) {
-    if (av.y == v.y) {
-      i_s = 1;
-    } else {
-      i_s = 4;
-    }
-    uv = vec2(v.x / v.y, v.z / v.y);
-  } else {
-    if (av.z == v.z) {
-      i_s = 2;
-    } else {
-      i_s = 5;
-    }
-    uv = vec2(v.x / v.z, v.y / v.z);
-  }
-
-  return SamplingTarget(i_s, uv);
-}
-
 void main() {
   // Extract relative screen coordinates from texCoord vector
   float u = v_texCoord.x;
@@ -76,31 +39,7 @@ void main() {
   float y = dot(vt, u_v2);
   float z = dot(vt, u_v3);
 
-  // Convert camera oriented cartesian coordinates to sampling target information
-  SamplingTarget st = xyz_to_uv(vec3(x, y, z));
 
-
-  vec2 centeringOffset = vec2(0.5, 0.5);
-  vec2 scale = vec2(0.5, 0.5);
-
-  vec2 uv = st.uv;
-  float m = 0.0;
-  if (st.i_s == 0) {
-    gl_FragColor = texture2D(u_image0, uv * scale + centeringOffset, 1.0);
-  } else if (st.i_s == 1) {
-    uv = vec2(m - uv.x, uv.y);
-    gl_FragColor = texture2D(u_image1, uv * scale + centeringOffset, 1.0);
-  } else if (st.i_s == 2) {
-    uv = vec2(uv.y, m - uv.x);
-    gl_FragColor = texture2D(u_image2, uv * scale + centeringOffset, 1.0);
-  } else if (st.i_s == 3) {
-    uv = vec2(uv.x, m - uv.y);
-    gl_FragColor = texture2D(u_image3, uv * scale + centeringOffset, 1.0);
-  } else if (st.i_s == 4) {
-    uv = vec2(m - uv.x, m - uv.y);
-    gl_FragColor = texture2D(u_image4, uv * scale + centeringOffset, 1.0);
-  } else {
-    uv = vec2(m - uv.y, m - uv.x);
-    gl_FragColor = texture2D(u_image5, uv * scale + centeringOffset, 1.0);
-  }
+  // Sample cubemap
+  gl_FragColor = textureCube(u_cubeMap, vec3(x, y, -z));
 }
