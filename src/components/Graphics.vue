@@ -44,7 +44,35 @@ function loadImage(url) {
   });
 }
 
-function main(gl, images) {
+function getReferenceSystem(v1t) {
+  function cross(v1, v2) {
+    const x1 = v1[0];
+    const y1 = v1[1];
+    const z1 = v1[2];
+    const x2 = v2[0];
+    const y2 = v2[1];
+    const z2 = v2[2];
+
+    return [
+      (y1 * z2) - (z1 * y2),
+      (z1 * x2) - (x1 * z2),
+      (x1 * y2) - (y1 * x2),
+    ];
+  }
+
+  function normalize(v) {
+    const l = Math.sqrt((v[0] * v[0]) + (v[1] * v[1]) + (v[2] * v[2]));
+    return v.map(a => a / l);
+  }
+
+  const v1 = normalize(v1t);
+  const v2 = normalize(cross(v1, [0, 1, 0]));
+  const v3 = normalize(cross(v1, v2));
+
+  return { v1, v2, v3 };
+}
+
+function initializeGpu(gl, images) {
   const fs = loadShader(gl, fragmentShaderSource, gl.FRAGMENT_SHADER);
   const vs = loadShader(gl, vertexShaderSource, gl.VERTEX_SHADER);
 
@@ -81,9 +109,9 @@ function main(gl, images) {
   ]), gl.STATIC_DRAW);
 
   // create n textures
-  const textures = [];
-  for (let ii = 0; ii < images.length; ii += 1) {
+  images.forEach((image, i) => {
     const texture = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE0 + i);
     gl.bindTexture(gl.TEXTURE_2D, texture);
 
     // Set the parameters so we can render any size image.
@@ -93,30 +121,15 @@ function main(gl, images) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
     // Upload the image into the texture.
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images[ii]);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 
-    // add the texture to the array of textures.
-    textures.push(texture);
-  }
+    // lookup the sampler location.
+    const u_imageiLocation = gl.getUniformLocation(program, `u_image${i}`);
 
-  // lookup uniforms
-  const resolutionLocation = gl.getUniformLocation(program, 'u_resolution');
+    // set which texture units to render with.
+    gl.uniform1i(u_imageiLocation, i);  // texture unit i
+  });
 
-  // lookup the sampler locations.
-  const u_image0Location = gl.getUniformLocation(program, 'u_image0');
-  const u_image1Location = gl.getUniformLocation(program, 'u_image1');
-  const u_image2Location = gl.getUniformLocation(program, 'u_image2');
-  const u_image3Location = gl.getUniformLocation(program, 'u_image3');
-  const u_image4Location = gl.getUniformLocation(program, 'u_image4');
-  const u_image5Location = gl.getUniformLocation(program, 'u_image5');
-
-  resizeCanvasToDisplaySize(gl.canvas);
-
-  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-
-  // Clear the canvas
-  gl.clearColor(0, 0, 0, 0);
-  gl.clear(gl.COLOR_BUFFER_BIT);
 
   // Tell it to use our program (pair of shaders)
   gl.useProgram(program);
@@ -145,34 +158,38 @@ function main(gl, images) {
   gl.vertexAttribPointer(
       texcoordLocation, size, type, normalize, stride, offset);
 
+  return program;
+}
+
+function draw(gl, program, time) {
+  // lookup uniforms
+  const resolutionLocation = gl.getUniformLocation(program, 'u_resolution');
+
+  const v1Location = gl.getUniformLocation(program, 'u_v1');
+  const v2Location = gl.getUniformLocation(program, 'u_v2');
+  const v3Location = gl.getUniformLocation(program, 'u_v3');
+
+  const rs = getReferenceSystem([4 * Math.cos(time), -2, -1 * Math.sin(time)]);
+  gl.uniform3f(v1Location, rs.v1[0], rs.v1[1], rs.v1[2]);
+  gl.uniform3f(v2Location, rs.v2[0], rs.v2[1], rs.v2[2]);
+  gl.uniform3f(v3Location, rs.v3[0], rs.v3[1], rs.v3[2]);
+
+
+  resizeCanvasToDisplaySize(gl.canvas);
+
+  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+  // Clear the canvas
+  gl.clearColor(0, 0, 0, 0);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+
   // set the resolution
   gl.uniform2f(resolutionLocation, gl.canvas.width, gl.canvas.height);
-
-  // set which texture units to render with.
-  gl.uniform1i(u_image0Location, 0);  // texture unit 0
-  gl.uniform1i(u_image1Location, 1);  // texture unit 1
-  gl.uniform1i(u_image2Location, 2);  // texture unit 2
-  gl.uniform1i(u_image3Location, 3);  // texture unit 3
-  gl.uniform1i(u_image4Location, 4);  // texture unit 4
-  gl.uniform1i(u_image5Location, 5);  // texture unit 5
-
-  // Set each texture unit to use a particular texture.
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, textures[0]);
-  gl.activeTexture(gl.TEXTURE1);
-  gl.bindTexture(gl.TEXTURE_2D, textures[1]);
-  gl.activeTexture(gl.TEXTURE2);
-  gl.bindTexture(gl.TEXTURE_2D, textures[2]);
-  gl.activeTexture(gl.TEXTURE3);
-  gl.bindTexture(gl.TEXTURE_2D, textures[3]);
-  gl.activeTexture(gl.TEXTURE4);
-  gl.bindTexture(gl.TEXTURE_2D, textures[4]);
-  gl.activeTexture(gl.TEXTURE5);
-  gl.bindTexture(gl.TEXTURE_2D, textures[5]);
 
   // Draw the rectangle.
   gl.drawArrays(gl.TRIANGLES, 0, 6);
 }
+
 
 export default {
   mounted() {
@@ -187,7 +204,13 @@ export default {
 
     Promise.all(imagePaths.map(loadImage)).then((images) => {
       const gl = this.$el.getContext('webgl');
-      main(gl, images);
+
+      const program = initializeGpu(gl, images);
+      const repeatDraw = () => {
+        draw(gl, program, Date.now() * 1e-3);
+        requestAnimationFrame(repeatDraw);
+      };
+      repeatDraw();
     });
   },
 };

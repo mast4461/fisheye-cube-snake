@@ -10,6 +10,10 @@ uniform sampler2D u_image3;
 uniform sampler2D u_image4;
 uniform sampler2D u_image5;
 
+uniform vec3 u_v1;
+uniform vec3 u_v2;
+uniform vec3 u_v3;
+
 // the texCoords passed in from the vertex shader.
 varying vec2 v_texCoord;
 
@@ -57,13 +61,19 @@ void main() {
   // Calculate spherical coordinates
   float phi = atan(v, u);
   float theta = u*u + v*v;
-  theta = M_PI * (sqrt(theta) + theta);
+  theta = sqrt(theta) + theta;
+  theta = 1.3 * M_PI * theta;
 
   // Convert spherical coordinates to cartesian coordinates
   float sintheta = sin(theta);
-  float x = sintheta*cos(phi);
-  float y = sintheta*sin(phi);
-  float z = cos(theta);
+  float xt = sintheta*cos(phi);
+  float yt = sintheta*sin(phi);
+  float zt = cos(theta);
+
+  vec3 vt = vec3(xt, yt, zt);
+  float x = dot(vt, u_v1);
+  float y = dot(vt, u_v2);
+  float z = dot(vt, u_v3);
 
   // TODO transform to camera oriented coordinate system here
 
