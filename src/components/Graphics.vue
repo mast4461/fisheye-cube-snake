@@ -206,11 +206,11 @@ export default {
       const gl = this.$el.getContext('webgl');
 
       const program = initializeGpu(gl, images);
-      const repeatDraw = () => {
-        draw(gl, program, Date.now() * 1e-3);
+      const repeatDraw = (time) => {
+        draw(gl, program, time * 1e-3);
         requestAnimationFrame(repeatDraw);
       };
-      repeatDraw();
+      requestAnimationFrame(repeatDraw);
     });
   },
 };
