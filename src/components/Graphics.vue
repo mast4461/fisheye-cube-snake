@@ -113,8 +113,8 @@ function initializeGpu(gl, cubeMapSides) {
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubeMapTexture);
 
-  cubeMapSides.forEach((side) => {
-    gl.texImage2D(side[0], 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, side[1]);
+  cubeMapSides.forEach(([side, image]) => {
+    gl.texImage2D(side, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
   });
 
   gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
