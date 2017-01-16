@@ -7,7 +7,7 @@
       <td></td>
       <td>
         <p>top</p>
-        <drawable-canvas ref="top" name="top"></drawable-canvas>
+        <drawable-canvas ref="top" name="top" color="rgb(254, 161, 11)"></drawable-canvas>
       </td>
       <td></td>
       <td></td>
@@ -15,26 +15,26 @@
     <tr>
       <td>
         <p>left</p>
-        <drawable-canvas ref="left" name="left"></drawable-canvas>
+        <drawable-canvas ref="left" name="left" color="rgb(135, 65, 44)"></drawable-canvas>
       </td>
       <td>
         <p>front</p>
-        <drawable-canvas ref="front" name="front"></drawable-canvas>
+        <drawable-canvas ref="front" name="front" color="rgb(4, 71, 29)"></drawable-canvas>
       </td>
       <td>
         <p>right</p>
-        <drawable-canvas ref="right" name="right"></drawable-canvas>
+        <drawable-canvas ref="right" name="right" color="rgb(223, 37, 14)"></drawable-canvas>
       </td>
       <td>
         <p>back</p>
-        <drawable-canvas ref="back" name="back"></drawable-canvas>
+        <drawable-canvas ref="back" name="back" color="rgb(156, 39, 144)"></drawable-canvas>
       </td>
     </tr>
     <tr>
       <td></td>
       <td>
         <p>bottom</p>
-        <drawable-canvas ref="bottom" name="bottom"></drawable-canvas>
+        <drawable-canvas ref="bottom" name="bottom" color="rgb(114, 187, 183)"></drawable-canvas>
       </td>
       <td></td>
       <td></td>
@@ -48,7 +48,7 @@
 <style lang="sass" scoped>
 #webgl-canvas
   width: 100vw
-  height: 100vw
+  height: 400px
   display: block
 
 table p
@@ -250,7 +250,7 @@ export default {
     console.log({ loadedCubeMapSides });
 
     const repeatDraw = (time) => {
-      draw(gl, program, time * 1e-3, loadedCubeMapSides);
+      draw(gl, program, time * 4e-4, loadedCubeMapSides);
       requestAnimationFrame(repeatDraw);
     };
     requestAnimationFrame(repeatDraw);

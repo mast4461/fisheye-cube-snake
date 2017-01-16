@@ -26,7 +26,7 @@ export default {
     };
   },
 
-  props: ['name'],
+  props: ['name', 'color'],
 
   methods: {
     drawIfActive(event) {
@@ -40,12 +40,12 @@ export default {
     drawSpot(x, y) {
       const l = 10;
       const o = l / 2;
-      this.ctx.fillStyle = 'black';
+      this.ctx.fillStyle = 'green';
       this.ctx.fillRect(x - o, y - o, l, l);
     },
 
     drawText(text, x, y) {
-      this.ctx.fillStyle = 'red';
+      this.ctx.fillStyle = 'black';
       this.ctx.textAlign = 'center';
       this.ctx.textBaseline = 'middle';
       this.ctx.font = `${this.size / 3}px serif`;
@@ -69,6 +69,19 @@ export default {
         this.drawLine(v, 0, v, this.size);
       }
     },
+
+    drawCenter() {
+      const v = this.size / 2;
+      const l = 5;
+      const o = l / 2;
+      this.ctx.fillStyle = 'red';
+      this.ctx.fillRect(v - o, v - o, l, l);
+    },
+
+    drawRandomBackground() {
+      this.ctx.fillStyle = this.color;
+      this.ctx.fillRect(0, 0, this.size, this.size);
+    },
   },
 
   computed: {
@@ -84,10 +97,13 @@ export default {
   mounted() {
     this.ctx = this.$el.getContext('2d');
 
-    this.drawGrid(15);
+    this.drawRandomBackground();
+    this.drawGrid(4);
 
     const s = this.size / 2;
     this.drawText(this.name, s, s);
+
+    this.drawCenter();
   },
 };
 </script>
