@@ -40,7 +40,7 @@ export default {
     drawSpot(x, y) {
       const l = 10;
       const o = l / 2;
-      this.ctx.fillStyle = 'green';
+      this.ctx.fillStyle = 'black';
       this.ctx.fillRect(x - o, y - o, l, l);
     },
 

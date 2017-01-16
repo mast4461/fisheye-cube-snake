@@ -47,8 +47,8 @@
 <!-- Add 'scoped' attribute to limit CSS to this component only -->
 <style lang="sass" scoped>
 #webgl-canvas
-  width: 300px
-  height: 300px
+  width: 100vw
+  height: 100vw
   display: block
 
 table p
@@ -70,12 +70,6 @@ import DrawableCanvas from './DrawableCanvas';
 import fragmentShaderSource from '../shaders/standard.frag';
 import vertexShaderSource from '../shaders/standard.vert';
 
-import topImagePath from '../assets/top.png';
-import leftImagePath from '../assets/left.png';
-import frontImagePath from '../assets/front.png';
-import rightImagePath from '../assets/right.png';
-import backImagePath from '../assets/back.png';
-import bottomImagePath from '../assets/bottom.png';
 
 function setRectangle(gl) {
   const x1 = -1;
@@ -92,13 +86,6 @@ function setRectangle(gl) {
   ]), gl.STATIC_DRAW);
 }
 
-function loadImage(url) {
-  return new Promise((resolve) => {
-    const image = new Image();
-    image.src = url;
-    image.onload = () => resolve(image);
-  });
-}
 
 function getReferenceSystem(v1t) {
   function cross(v1, v2) {
@@ -128,7 +115,7 @@ function getReferenceSystem(v1t) {
   return { v1, v2, v3 };
 }
 
-function initializeGpu(gl, cubeMapSides) {
+function initializeGpu(gl) {
   const fs = loadShader(gl, fragmentShaderSource, gl.FRAGMENT_SHADER);
   const vs = loadShader(gl, vertexShaderSource, gl.VERTEX_SHADER);
 
@@ -169,10 +156,6 @@ function initializeGpu(gl, cubeMapSides) {
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubeMapTexture);
 
-  cubeMapSides.forEach(([side, image]) => {
-    gl.texImage2D(side, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-  });
-
   gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -211,7 +194,11 @@ function initializeGpu(gl, cubeMapSides) {
   return program;
 }
 
-function draw(gl, program, time) {
+function draw(gl, program, time, cubeMapSides) {
+  cubeMapSides.forEach(([side, image]) => {
+    gl.texImage2D(side, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+  });
+
   // lookup uniforms
   const resolutionLocation = gl.getUniformLocation(program, 'u_resolution');
 
@@ -223,7 +210,6 @@ function draw(gl, program, time) {
   gl.uniform3f(v1Location, rs.v1[0], rs.v1[1], rs.v1[2]);
   gl.uniform3f(v2Location, rs.v2[0], rs.v2[1], rs.v2[2]);
   gl.uniform3f(v3Location, rs.v3[0], rs.v3[1], rs.v3[2]);
-
 
   resizeCanvasToDisplaySize(gl.canvas);
 
@@ -250,34 +236,24 @@ export default {
     const gl = this.$refs['webgl-canvas'].getContext('webgl');
 
     const cubeMapSides = [
-      [gl.TEXTURE_CUBE_MAP_NEGATIVE_X, leftImagePath],
-      [gl.TEXTURE_CUBE_MAP_POSITIVE_X, rightImagePath],
-      [gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, bottomImagePath],
-      [gl.TEXTURE_CUBE_MAP_POSITIVE_Y, topImagePath],
-      [gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, backImagePath],
-      [gl.TEXTURE_CUBE_MAP_POSITIVE_Z, frontImagePath],
+      [gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 'left'],
+      [gl.TEXTURE_CUBE_MAP_POSITIVE_X, 'right'],
+      [gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 'bottom'],
+      [gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 'top'],
+      [gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 'back'],
+      [gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 'front'],
     ];
 
-    const drawableCanvases = [
-      'left',
-      'right',
-      'bottom',
-      'top',
-      'back',
-      'front',
-    ].map(s => this.$refs[s]);
+    const program = initializeGpu(gl);
+    const loadedCubeMapSides = cubeMapSides.map(([side, ref]) => [side, this.$refs[ref].$el]);
 
-    Promise.all(cubeMapSides.map(side => loadImage(side[1]))).then(() => {
-      const loadedCubeMapSides = cubeMapSides.map((side, i) => [side[0], drawableCanvases[i].$el]);
+    console.log({ loadedCubeMapSides });
 
-      const program = initializeGpu(gl, loadedCubeMapSides);
-
-      const repeatDraw = (time) => {
-        draw(gl, program, time * 1e-3);
-        requestAnimationFrame(repeatDraw);
-      };
+    const repeatDraw = (time) => {
+      draw(gl, program, time * 1e-3, loadedCubeMapSides);
       requestAnimationFrame(repeatDraw);
-    });
+    };
+    requestAnimationFrame(repeatDraw);
   },
 };
 </script>
