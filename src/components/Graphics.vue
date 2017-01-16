@@ -1,6 +1,60 @@
 <template>
-<canvas></canvas>
+<div>
+  <canvas id="webgl-canvas" ref="webgl-canvas"></canvas>
+
+  <table>
+    <tr>
+      <td></td>
+      <td>
+        <p>top</p>
+        <drawable-canvas ref="top" name="top"></drawable-canvas>
+      </td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>
+        <p>left</p>
+        <drawable-canvas ref="left" name="left"></drawable-canvas>
+      </td>
+      <td>
+        <p>front</p>
+        <drawable-canvas ref="front" name="front"></drawable-canvas>
+      </td>
+      <td>
+        <p>right</p>
+        <drawable-canvas ref="right" name="right"></drawable-canvas>
+      </td>
+      <td>
+        <p>back</p>
+        <drawable-canvas ref="back" name="back"></drawable-canvas>
+      </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td>
+        <p>bottom</p>
+        <drawable-canvas ref="bottom" name="bottom"></drawable-canvas>
+      </td>
+      <td></td>
+      <td></td>
+    </tr>
+  </table>
+
+</div>
 </template>
+
+<!-- Add 'scoped' attribute to limit CSS to this component only -->
+<style lang="sass" scoped>
+#webgl-canvas
+  width: 300px
+  height: 300px
+  display: block
+
+table p
+  margin: 0
+</style>
+
 
 <script>
 /* eslint-disable camelcase, max-len */
@@ -10,6 +64,8 @@
  */
 
 import { loadShader, createProgram, resizeCanvasToDisplaySize } from '../scripts/webgl-utils-remix';
+
+import DrawableCanvas from './DrawableCanvas';
 
 import fragmentShaderSource from '../shaders/standard.frag';
 import vertexShaderSource from '../shaders/standard.vert';
@@ -186,8 +242,12 @@ function draw(gl, program, time) {
 
 
 export default {
+  components: {
+    DrawableCanvas,
+  },
+
   mounted() {
-    const gl = this.$el.getContext('webgl');
+    const gl = this.$refs['webgl-canvas'].getContext('webgl');
 
     const cubeMapSides = [
       [gl.TEXTURE_CUBE_MAP_NEGATIVE_X, leftImagePath],
@@ -198,8 +258,17 @@ export default {
       [gl.TEXTURE_CUBE_MAP_POSITIVE_Z, frontImagePath],
     ];
 
-    Promise.all(cubeMapSides.map(side => loadImage(side[1]))).then((images) => {
-      const loadedCubeMapSides = cubeMapSides.map((side, i) => [side[0], images[i]]);
+    const drawableCanvases = [
+      'left',
+      'right',
+      'bottom',
+      'top',
+      'back',
+      'front',
+    ].map(s => this.$refs[s]);
+
+    Promise.all(cubeMapSides.map(side => loadImage(side[1]))).then(() => {
+      const loadedCubeMapSides = cubeMapSides.map((side, i) => [side[0], drawableCanvases[i].$el]);
 
       const program = initializeGpu(gl, loadedCubeMapSides);
 
@@ -212,12 +281,3 @@ export default {
   },
 };
 </script>
-
-<!-- Add 'scoped' attribute to limit CSS to this component only -->
-<style scoped>
-canvas {
-  width: 100vw;
-  height: 100vh;
-  display: block;
-}
-</style>
