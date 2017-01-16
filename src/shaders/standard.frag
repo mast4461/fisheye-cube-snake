@@ -24,8 +24,8 @@ void main() {
   // Calculate spherical coordinates
   float phi = atan(v, u);
   float theta = u*u + v*v;
-  theta = sqrt(theta) + theta;
-  theta = 1.3 * M_PI * theta;
+  theta = sqrt(theta) + theta * theta;
+  theta = 1.7 * M_PI * theta;
 
   // Convert spherical coordinates to cartesian coordinates
   float sintheta = sin(theta);
