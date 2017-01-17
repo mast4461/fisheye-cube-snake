@@ -47,27 +47,6 @@ function createFaces(s) {
   ];
 }
 
-function navigate({ position, velocity, faces, sideLength, turnFactor }) {
-  const face = faces[getFaceIndex(position, sideLength)];
-  let vn = velocity;
-
-  if (turnFactor) {
-    vn = face.normal.cross(vn).mult(turnFactor);
-  }
-
-  let pn = position.add(vn);
-
-  if (face.isOutside(pn)) {
-    pn = pn.add(face.normal);
-    vn = face.normal;
-  }
-
-  return {
-    position: pn.map(Math.round),
-    velocity: vn.map(Math.round),
-  };
-}
-
 export default {
   data() {
     return {
@@ -98,12 +77,16 @@ export default {
       return getFaceIndex(this.position, this.sideLength);
     },
 
+    currentFace() {
+      return this.faces[this.faceIndex];
+    },
+
     headInfo() {
       const faceNames = ['top', 'left', 'front', 'right', 'back', 'bottom'];
 
       return {
         face: faceNames[this.faceIndex],
-        position: this.faces[this.faceIndex].project(this.position).asArray(),
+        position: this.currentFace.project(this.position).asArray(),
       };
     },
   },
@@ -119,13 +102,7 @@ export default {
 
     tick() {
       // Calculate new position and velocity
-      const navigationResult = navigate({
-        position: this.position,
-        velocity: this.velocity,
-        faces: this.faces,
-        sideLength: this.sideLength,
-        turnFactor: this.turnFactor,
-      });
+      const navigationResult = this.navigate();
 
       // TODO check that navigation result is okay
 
@@ -133,6 +110,26 @@ export default {
       this.position = navigationResult.position;
       this.velocity = navigationResult.velocity;
       this.turnFactor = 0;
+    },
+
+    navigate() {
+      let vn = this.velocity;
+
+      if (this.turnFactor) {
+        vn = this.currentFace.normal.cross(vn).mult(this.turnFactor);
+      }
+
+      let pn = this.position.add(vn);
+
+      if (this.currentFace.isOutside(pn)) {
+        pn = pn.add(this.currentFace.normal);
+        vn = this.currentFace.normal;
+      }
+
+      return {
+        position: pn.map(Math.round),
+        velocity: vn.map(Math.round),
+      };
     },
   },
 };
