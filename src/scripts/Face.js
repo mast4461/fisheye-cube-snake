@@ -9,8 +9,8 @@ class Face {
   }) {
     const s = sideLength;
     this.sideLength = sideLength;
-    this.v = v;
-    this.u = normal.cross(v).map(Math.round);
+    this.v = v.normalize().round();
+    this.u = normal.cross(v).round();
     this.normal = normal;
 
     const d = (s - 1) / 2;
@@ -18,8 +18,8 @@ class Face {
 
     // center of face in cubecentered coordinate system
     this.oLogic = logicCubeOrigin.add(normal.mult(-(s + 1) / 2));
-    this.oCam = normal.mult(-s / 2).sub(this.u.mult(d)).sub(this.v.mult(d));
-    this.tlLogic = logicCubeOrigin.add(this.oCam);
+    const oCam = normal.mult(-s / 2).sub(this.u.mult(d)).sub(this.v.mult(d));
+    this.tlLogic = logicCubeOrigin.add(oCam);
   }
 
   // Accepts Vec3

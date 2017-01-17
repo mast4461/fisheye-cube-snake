@@ -66,6 +66,10 @@ class Vec3 {
   asArray() {
     return [this.x, this.y, this.z];
   }
+
+  round() {
+    return this.map(Math.round);
+  }
 }
 
 export default Vec3;

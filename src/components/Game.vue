@@ -127,8 +127,8 @@ export default {
       }
 
       return {
-        position: pn.map(Math.round),
-        velocity: vn.map(Math.round),
+        position: pn.round(),
+        velocity: vn.round(),
       };
     },
   },
