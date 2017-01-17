@@ -242,12 +242,16 @@ export default {
       'front',
     ].map(v => this.$refs[v]);
 
+    let averagedCameraDirection = this.cameraDirection;
+    const decayfactor = 0.025;
+
     const repeatDraw = (time) => {
       dcs.forEach(dc => dc.reset());
       this.$refs[this.headInfo.face].fillCell(...this.headInfo.position);
 
+      averagedCameraDirection = averagedCameraDirection.mult(1 - decayfactor).add(this.cameraDirection.mult(decayfactor));
 
-      draw(gl, program, time * 4e-4, loadedCubeMapSides, this.cameraDirection);
+      draw(gl, program, time * 4e-4, loadedCubeMapSides, averagedCameraDirection);
       requestAnimationFrame(repeatDraw);
     };
     requestAnimationFrame(repeatDraw);
