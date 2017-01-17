@@ -86,7 +86,7 @@ function setRectangle(gl) {
   ]), gl.STATIC_DRAW);
 }
 
-
+let v2Last = [1, 1, 1];
 function getReferenceSystem(vt) {
   function cross(v1, v2) {
     const x1 = v1[0];
@@ -108,30 +108,13 @@ function getReferenceSystem(vt) {
     return v.map(a => a / l);
   }
 
-  const v3 = normalize(vt);
-  const v1 = normalize(cross(v3, [0, 0, 1]));
+  const v1 = normalize(vt);
+  const v3 = normalize(cross(vt, v2Last));
   const v2 = normalize(cross(v3, v1));
 
-  // console.log('###################################');
-  // console.log(v3);
-  // console.log(v1);
-  // console.log(v2);
+  v2Last = v2;
 
-  // // Top, upright
-  // const v3 = [1, 0, 0];
-  // const v1 = [0, 1, 0];
-  // const v2 = [0, 0, 1];
-
-
-  // const v3 = [0, -1, 0];
-  // const v1 = [0, 0, 1];
-  // const v2 = [1, 0, 0];
-
-  return {
-    v1,
-    v2,
-    v3,
-  };
+  return { v1, v2, v3 };
 }
 
 function initializeGpu(gl) {
