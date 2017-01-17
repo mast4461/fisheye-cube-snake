@@ -34,11 +34,15 @@ function createFaces(s) {
   ];
 }
 
-function navigate({ position, velocity, faces, sideLength }) {
+function navigate({ position, velocity, faces, sideLength, turnFactor }) {
   const face = faces[getFaceIndex(position, sideLength)];
-
-  let pn = position.add(velocity);
   let vn = velocity;
+
+  if (turnFactor) {
+    vn = face.normal.cross(vn).mult(turnFactor);
+  }
+
+  let pn = position.add(vn);
 
   if (face.isOutside(pn)) {
     pn = pn.add(face.normal);
@@ -62,17 +66,17 @@ class Game {
 
     const d = (sideLength - 1) / 2;
     this.cubeCenter = new Vec3(d, d, d);
+    this.turnFactor = 0;
   }
 
   tick() {
-    // TODO Update velocity according to key input
-
     // Calculate new position and velocity
     const navigationResult = navigate({
       position: this.position,
       velocity: this.velocity,
       faces: this.faces,
       sideLength: this.sideLength,
+      turnFactor: this.turnFactor,
     });
 
     // TODO check that navigation result is okay
@@ -80,6 +84,7 @@ class Game {
     // Update position and velocity
     this.position = navigationResult.position;
     this.velocity = navigationResult.velocity;
+    this.turnFactor = 0;
   }
 
   getCameraDirection() {
@@ -98,6 +103,14 @@ class Game {
       face: faceNames[faceIndex],
       position: this.faces[faceIndex].project(this.position).asArray(),
     };
+  }
+
+  turnLeft() {
+    this.turnFactor = 1;
+  }
+
+  turnRight() {
+    this.turnFactor = -1;
   }
 }
 

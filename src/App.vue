@@ -25,6 +25,20 @@ export default {
     };
   },
 
+  methods: {
+    listenForKeys(event) {
+      console.log(event);
+      switch (event.keyCode) {
+        case 39:
+          return this.game.turnRight();
+        case 37:
+          return this.game.turnLeft();
+        default:
+          return undefined;
+      }
+    },
+  },
+
   mounted() {
     this.game = new Game(this.sideLength);
     this.game.tick();
@@ -36,10 +50,12 @@ export default {
       // console.log(this.cameraDirection.toString());
       console.log(this.game.getHeadInfo());
     }, 100);
+    document.addEventListener('keydown', this.listenForKeys);
   },
 
   beforeDestroy() {
     clearInterval(this.tickerId);
+    document.removeEventListener('keydown', this.listenForKeys);
   },
 };
 </script>
