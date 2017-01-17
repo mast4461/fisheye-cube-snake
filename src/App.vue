@@ -27,7 +27,6 @@ export default {
 
   methods: {
     listenForKeys(event) {
-      console.log(event);
       switch (event.keyCode) {
         case 39:
           return this.game.turnRight();

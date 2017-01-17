@@ -26,14 +26,14 @@ void main() {
   float theta = TAU * sqrt(u*u + v*v);
 
   // Convert spherical coordinates to cartesian coordinates
-  float sintheta = sin(theta);
-  float xt = sintheta*cos(phi);
-  float yt = sintheta*sin(phi);
+  float minusSinTheta = -sin(theta);
+  float xt = minusSinTheta*cos(phi);
+  float yt = minusSinTheta*sin(phi);
   float zt = cos(theta);
 
   // Transform to camera oriented coordinate system
 
-  vec3 s = vec3(zt) * u_v1 + vec3(-xt) * u_v2 + vec3(-yt) * u_v3;
+  vec3 s = vec3(zt) * u_v1 + vec3(xt) * u_v2 + vec3(yt) * u_v3;
 
   // Sample cubemap
   gl_FragColor = textureCube(u_cubeMap, s.xzy);
