@@ -52,8 +52,8 @@ export default {
       this.ctx.fillText(text, x, y);
     },
 
-    drawLine(x1, y1, x2, y2) {
-      this.ctx.strokeStyle = '#ccc';
+    drawLine(x1, y1, x2, y2, color = '#ccc') {
+      this.ctx.strokeStyle = color;
 
       this.ctx.beginPath();
       this.ctx.moveTo(x1, y1);
@@ -62,11 +62,12 @@ export default {
       this.ctx.stroke();
     },
 
-    drawGrid(n) {
-      for (let i = 0; i <= n; i += 1) {
-        const v = (i / n) * this.size;
-        this.drawLine(0, v, this.size, v);
-        this.drawLine(v, 0, v, this.size);
+    drawGrid() {
+      const color = 'rgba(0, 0, 0, 0.1)';
+      for (let i = 0; i <= this.sideLength; i += 1) {
+        const v = (i / this.sideLength) * this.size;
+        this.drawLine(0, v, this.size, v, color);
+        this.drawLine(v, 0, v, this.size, color);
       }
     },
 
@@ -83,18 +84,27 @@ export default {
       this.ctx.fillRect(0, 0, this.size, this.size);
     },
 
-    fillCell(x, y) {
+    fillCell(x, y, color = 'black') {
       const step = this.size / this.sideLength;
-      this.ctx.fillStyle = 'black';
+      this.ctx.fillStyle = color;
 
       const a = x * step;
       const b = y * step;
       this.ctx.fillRect(a, b, step, step);
     },
 
+    checker() {
+      for (let y = 0; y < this.sideLength; y += 1) {
+        for (let x = y % 2; x < this.sideLength; x += 2) {
+          this.fillCell(x, y, 'rgba(0, 0, 0, 0.1)');
+        }
+      }
+    },
+
     reset() {
       this.drawRandomBackground();
-      this.drawGrid(this.sideLength);
+      this.drawGrid();
+      // this.checker();
 
       const s = this.size / 2;
       this.drawText(this.name, s, s);
