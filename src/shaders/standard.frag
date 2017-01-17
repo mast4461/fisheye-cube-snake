@@ -32,8 +32,8 @@ void main() {
   float zt = cos(theta);
 
   // Transform to camera oriented coordinate system
-
-  vec3 s = vec3(zt) * u_v1 + vec3(xt) * u_v2 + vec3(yt) * u_v3;
+  // Add positive value to the term multiplied with u_v1 to zoom
+  vec3 s = vec3(zt + 0.1) * u_v1 + vec3(xt) * u_v2 + vec3(yt) * u_v3;
 
   // Sample cubemap
   gl_FragColor = textureCube(u_cubeMap, s.xzy);

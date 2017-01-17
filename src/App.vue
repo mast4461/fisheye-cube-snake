@@ -1,27 +1,21 @@
 <template>
   <div id="app">
     <!-- <button @click="start">start/restart</button> -->
-    <graphics :camera-direction="cameraDirection" :side-length="sideLength" :head-info="headInfo"></graphics>
+    <game ref="game" :side-length="sideLength"></game>
   </div>
 </template>
 
 <script>
-import Graphics from './components/Graphics';
-import Game from './scripts/game-logic';
-import Vec3 from './scripts/Vec3';
+import Game from './components/Game';
 
 export default {
   name: 'app',
   components: {
-    Graphics,
+    Game,
   },
 
   data() {
     return {
-      game: null,
-      tickerId: null,
-      cameraDirection: new Vec3(1, 0, 0),
-      headInfo: { face: 'front', position: [0, 0] },
       sideLength: 4,
     };
   },
@@ -30,9 +24,9 @@ export default {
     listenForKeys(event) {
       switch (event.keyCode) {
         case 39:
-          return this.game.turnRight();
+          return this.$refs.game.turnRight();
         case 37:
-          return this.game.turnLeft();
+          return this.$refs.game.turnLeft();
         default:
           return undefined;
       }
@@ -40,13 +34,9 @@ export default {
   },
 
   mounted() {
-    this.game = new Game(this.sideLength);
-    this.game.tick();
+    this.$refs.game.tick();
     this.tickerId = setInterval(() => {
-      this.game.tick();
-
-      this.cameraDirection = this.game.getCameraDirection();
-      this.headInfo = this.game.getHeadInfo();
+      this.$refs.game.tick();
     }, 250);
     document.addEventListener('keydown', this.listenForKeys);
   },
