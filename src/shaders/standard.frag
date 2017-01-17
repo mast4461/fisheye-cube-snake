@@ -1,4 +1,4 @@
-#define M_PI 3.1415926535897932384626433832795
+#define TAU 6.283185307179586 // Two pi
 
 precision mediump float;
 
@@ -23,9 +23,7 @@ void main() {
 
   // Calculate spherical coordinates
   float phi = atan(v, u);
-  float theta = u*u + v*v;
-  theta = sqrt(theta) + theta * theta;
-  theta = 1.7 * M_PI * theta;
+  float theta = TAU * sqrt(u*u + v*v);
 
   // Convert spherical coordinates to cartesian coordinates
   float sintheta = sin(theta);
@@ -34,11 +32,10 @@ void main() {
   float zt = cos(theta);
 
   // Transform to camera oriented coordinate system
-  vec3 vt = vec3(xt, yt, zt);
+  vec3 vt = vec3(xt, yt, zt); // Add offset to zt to zoom
   float x = dot(vt, u_v1);
   float y = dot(vt, u_v2);
   float z = dot(vt, u_v3);
-
 
   // Sample cubemap
   gl_FragColor = textureCube(u_cubeMap, vec3(x, y, -z));
