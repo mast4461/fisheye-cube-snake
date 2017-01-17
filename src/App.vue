@@ -8,6 +8,7 @@
 <script>
 import Graphics from './components/Graphics';
 import Game from './scripts/game-logic';
+import Vec3 from './scripts/Vec3';
 
 export default {
   name: 'app',
@@ -19,7 +20,7 @@ export default {
     return {
       game: null,
       tickerId: null,
-      cameraDirection: [1, 0, 0],
+      cameraDirection: new Vec3(1, 0, 0),
       headInfo: { face: 'front', position: [0, 0] },
       sideLength: 4,
     };
@@ -44,9 +45,9 @@ export default {
     this.tickerId = setInterval(() => {
       this.game.tick();
 
-      this.cameraDirection = this.game.getCameraDirection().asArray();
+      this.cameraDirection = this.game.getCameraDirection();
       this.headInfo = this.game.getHeadInfo();
-    }, 100);
+    }, 250);
     document.addEventListener('keydown', this.listenForKeys);
   },
 

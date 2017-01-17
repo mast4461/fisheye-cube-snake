@@ -65,6 +65,8 @@ table p
 
 import { loadShader, createProgram, resizeCanvasToDisplaySize } from '../scripts/webgl-utils-remix';
 
+import Vec3 from '../scripts/Vec3';
+
 import DrawableCanvas from './DrawableCanvas';
 
 import fragmentShaderSource from '../shaders/standard.frag';
@@ -86,31 +88,11 @@ function setRectangle(gl) {
   ]), gl.STATIC_DRAW);
 }
 
-let v2Last = [1, 1, 1];
+let v2Last = new Vec3(1, 1, 1);
 function getReferenceSystem(vt) {
-  function cross(v1, v2) {
-    const x1 = v1[0];
-    const y1 = v1[1];
-    const z1 = v1[2];
-    const x2 = v2[0];
-    const y2 = v2[1];
-    const z2 = v2[2];
-
-    return [
-      (y1 * z2) - (z1 * y2),
-      (z1 * x2) - (x1 * z2),
-      (x1 * y2) - (y1 * x2),
-    ];
-  }
-
-  function normalize(v) {
-    const l = Math.sqrt((v[0] * v[0]) + (v[1] * v[1]) + (v[2] * v[2]));
-    return v.map(a => a / l);
-  }
-
-  const v1 = normalize(vt);
-  const v3 = normalize(cross(vt, v2Last));
-  const v2 = normalize(cross(v3, v1));
+  const v1 = vt.normalize();
+  const v3 = vt.cross(v2Last).normalize();
+  const v2 = v3.cross(v1).normalize();
 
   v2Last = v2;
 
@@ -209,9 +191,9 @@ function draw(gl, program, time, cubeMapSides, cameraDirection) {
   const v3Location = gl.getUniformLocation(program, 'u_v3');
 
   const rs = getReferenceSystem(cameraDirection);
-  gl.uniform3f(v1Location, rs.v1[0], rs.v1[1], rs.v1[2]);
-  gl.uniform3f(v2Location, rs.v2[0], rs.v2[1], rs.v2[2]);
-  gl.uniform3f(v3Location, rs.v3[0], rs.v3[1], rs.v3[2]);
+  gl.uniform3f(v1Location, rs.v1.x, rs.v1.y, rs.v1.z);
+  gl.uniform3f(v2Location, rs.v2.x, rs.v2.y, rs.v2.z);
+  gl.uniform3f(v3Location, rs.v3.x, rs.v3.y, rs.v3.z);
 
   resizeCanvasToDisplaySize(gl.canvas);
 
