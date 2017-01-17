@@ -46,8 +46,6 @@ export default {
 
       this.cameraDirection = this.game.getCameraDirection().asArray();
       this.headInfo = this.game.getHeadInfo();
-      // console.log(this.cameraDirection.toString());
-      console.log(this.game.getHeadInfo());
     }, 100);
     document.addEventListener('keydown', this.listenForKeys);
   },

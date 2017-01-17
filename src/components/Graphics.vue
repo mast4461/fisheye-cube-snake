@@ -251,9 +251,7 @@ export default {
     const program = initializeGpu(gl);
     const loadedCubeMapSides = cubeMapSides.map(([side, ref]) => [side, this.$refs[ref].$el]);
 
-    console.log({ loadedCubeMapSides });
-
-    const dcs = [
+    const dcs = [ // Temporary!!!
       'left',
       'right',
       'bottom',
