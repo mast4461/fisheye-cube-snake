@@ -7,26 +7,27 @@ class Vec2 {
   add(v) {
     if (v instanceof Vec2) {
       return new Vec2(this.x + v.x, this.y + v.y);
-    } else {
-      return new Vec2(this.x + v, this.y + v);
     }
+    return new Vec2(this.x + v, this.y + v);
   }
 
   sub(v) {
     if (v instanceof Vec2) {
       return new Vec2(this.x - v.x, this.y - v.y);
-    } else {
-      return new Vec2(this.x - v, this.y - v);
     }
+    return new Vec2(this.x - v, this.y - v);
   }
 
   eq(v) {
     if (v instanceof Vec2) {
-      return this.x === v.x && this.y  === v.y;
-    } else {
-      return false;
+      return this.x === v.x && this.y === v.y;
     }
+    return false;
+  }
+
+  asArray() {
+    return [this.x, this.y];
   }
 }
 
-module.exports = Vec2;
+export default Vec2;

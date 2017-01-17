@@ -26,7 +26,7 @@ export default {
     };
   },
 
-  props: ['name', 'color'],
+  props: ['name', 'color', 'sideLength'],
 
   methods: {
     drawIfActive(event) {
@@ -82,6 +82,25 @@ export default {
       this.ctx.fillStyle = this.color;
       this.ctx.fillRect(0, 0, this.size, this.size);
     },
+
+    fillCell(x, y) {
+      const step = this.size / this.sideLength;
+      this.ctx.fillStyle = 'black';
+
+      const a = x * step;
+      const b = y * step;
+      this.ctx.fillRect(a, b, step, step);
+    },
+
+    reset() {
+      this.drawRandomBackground();
+      this.drawGrid(this.sideLength);
+
+      const s = this.size / 2;
+      this.drawText(this.name, s, s);
+
+      this.drawCenter();
+    },
   },
 
   computed: {
@@ -97,13 +116,7 @@ export default {
   mounted() {
     this.ctx = this.$el.getContext('2d');
 
-    this.drawRandomBackground();
-    this.drawGrid(4);
-
-    const s = this.size / 2;
-    this.drawText(this.name, s, s);
-
-    this.drawCenter();
+    this.reset();
   },
 };
 </script>

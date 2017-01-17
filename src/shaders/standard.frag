@@ -32,7 +32,7 @@ void main() {
   float zt = cos(theta);
 
   // Transform to camera oriented coordinate system
-  vec3 vt = vec3(xt, yt, zt); // Add offset to zt to zoom
+  vec3 vt = vec3(xt, -zt, yt); // Add offset to zt to zoom
   float x = dot(vt, u_v1);
   float y = dot(vt, u_v2);
   float z = dot(vt, u_v3);

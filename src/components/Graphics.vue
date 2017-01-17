@@ -7,7 +7,7 @@
       <td></td>
       <td>
         <p>top</p>
-        <drawable-canvas ref="top" name="top" color="rgb(254, 161, 11)"></drawable-canvas>
+        <drawable-canvas ref="top" name="top" :side-length="sideLength" color="rgb(254, 161, 11)"></drawable-canvas>
       </td>
       <td></td>
       <td></td>
@@ -15,26 +15,26 @@
     <tr>
       <td>
         <p>left</p>
-        <drawable-canvas ref="left" name="left" color="rgb(135, 65, 44)"></drawable-canvas>
+        <drawable-canvas ref="left" name="left" :side-length="sideLength" color="rgb(135, 65, 44)"></drawable-canvas>
       </td>
       <td>
         <p>front</p>
-        <drawable-canvas ref="front" name="front" color="rgb(4, 71, 29)"></drawable-canvas>
+        <drawable-canvas ref="front" name="front" :side-length="sideLength" color="rgb(4, 71, 29)"></drawable-canvas>
       </td>
       <td>
         <p>right</p>
-        <drawable-canvas ref="right" name="right" color="rgb(223, 37, 14)"></drawable-canvas>
+        <drawable-canvas ref="right" name="right" :side-length="sideLength" color="rgb(223, 37, 14)"></drawable-canvas>
       </td>
       <td>
         <p>back</p>
-        <drawable-canvas ref="back" name="back" color="rgb(156, 39, 144)"></drawable-canvas>
+        <drawable-canvas ref="back" name="back" :side-length="sideLength" color="rgb(156, 39, 144)"></drawable-canvas>
       </td>
     </tr>
     <tr>
       <td></td>
       <td>
         <p>bottom</p>
-        <drawable-canvas ref="bottom" name="bottom" color="rgb(114, 187, 183)"></drawable-canvas>
+        <drawable-canvas ref="bottom" name="bottom" :side-length="sideLength" color="rgb(114, 187, 183)"></drawable-canvas>
       </td>
       <td></td>
       <td></td>
@@ -87,7 +87,7 @@ function setRectangle(gl) {
 }
 
 
-function getReferenceSystem(v1t) {
+function getReferenceSystem(vt) {
   function cross(v1, v2) {
     const x1 = v1[0];
     const y1 = v1[1];
@@ -108,11 +108,30 @@ function getReferenceSystem(v1t) {
     return v.map(a => a / l);
   }
 
-  const v1 = normalize(v1t);
-  const v2 = normalize(cross(v1, [0, 1, 0]));
-  const v3 = normalize(cross(v1, v2));
+  const v3 = normalize(vt);
+  const v1 = normalize(cross(v3, [0, 0, 1]));
+  const v2 = normalize(cross(v3, v1));
 
-  return { v1, v2, v3 };
+  // console.log('###################################');
+  // console.log(v3);
+  // console.log(v1);
+  // console.log(v2);
+
+  // // Top, upright
+  // const v3 = [1, 0, 0];
+  // const v1 = [0, 1, 0];
+  // const v2 = [0, 0, 1];
+
+
+  // const v3 = [0, -1, 0];
+  // const v1 = [0, 0, 1];
+  // const v2 = [1, 0, 0];
+
+  return {
+    v1,
+    v2,
+    v3,
+  };
 }
 
 function initializeGpu(gl) {
@@ -194,7 +213,7 @@ function initializeGpu(gl) {
   return program;
 }
 
-function draw(gl, program, time, cubeMapSides) {
+function draw(gl, program, time, cubeMapSides, cameraDirection) {
   cubeMapSides.forEach(([side, image]) => {
     gl.texImage2D(side, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
   });
@@ -206,7 +225,7 @@ function draw(gl, program, time, cubeMapSides) {
   const v2Location = gl.getUniformLocation(program, 'u_v2');
   const v3Location = gl.getUniformLocation(program, 'u_v3');
 
-  const rs = getReferenceSystem([4 * Math.cos(time), -2, -1 * Math.sin(time)]);
+  const rs = getReferenceSystem(cameraDirection);
   gl.uniform3f(v1Location, rs.v1[0], rs.v1[1], rs.v1[2]);
   gl.uniform3f(v2Location, rs.v2[0], rs.v2[1], rs.v2[2]);
   gl.uniform3f(v3Location, rs.v3[0], rs.v3[1], rs.v3[2]);
@@ -232,6 +251,8 @@ export default {
     DrawableCanvas,
   },
 
+  props: ['cameraDirection', 'sideLength', 'headInfo'],
+
   mounted() {
     const gl = this.$refs['webgl-canvas'].getContext('webgl');
 
@@ -249,8 +270,21 @@ export default {
 
     console.log({ loadedCubeMapSides });
 
+    const dcs = [
+      'left',
+      'right',
+      'bottom',
+      'top',
+      'back',
+      'front',
+    ].map(v => this.$refs[v]);
+
     const repeatDraw = (time) => {
-      draw(gl, program, time * 4e-4, loadedCubeMapSides);
+      dcs.forEach(dc => dc.reset());
+      this.$refs[this.headInfo.face].fillCell(...this.headInfo.position);
+
+
+      draw(gl, program, time * 4e-4, loadedCubeMapSides, this.cameraDirection);
       requestAnimationFrame(repeatDraw);
     };
     requestAnimationFrame(repeatDraw);
