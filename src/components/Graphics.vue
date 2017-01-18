@@ -216,7 +216,7 @@ export default {
     DrawableCanvas,
   },
 
-  props: ['cameraDirection', 'sideLength', 'headInfo'],
+  props: ['cameraDirection', 'sideLength', 'headInfo', 'snakeCells'],
 
   mounted() {
     const gl = this.$refs['webgl-canvas'].getContext('webgl');
@@ -234,12 +234,12 @@ export default {
     const loadedCubeMapSides = cubeMapSides.map(([side, ref]) => [side, this.$refs[ref].$el]);
 
     const dcs = [ // Temporary!!!
-      'left',
-      'right',
-      'bottom',
       'top',
-      'back',
+      'left',
       'front',
+      'right',
+      'back',
+      'bottom',
     ].map(v => this.$refs[v]);
 
     let averagedCameraDirection = this.cameraDirection;
@@ -247,7 +247,10 @@ export default {
 
     const repeatDraw = (time) => {
       dcs.forEach(dc => dc.reset());
-      this.$refs[this.headInfo.face].fillCell(...this.headInfo.position);
+      this.$refs[this.headInfo.face].fillCell(...this.headInfo.position, 'blue');
+      this.snakeCells.forEach((cell) => {
+        dcs[cell.faceIndex].fillCell(...cell.projectedPosition.asArray(), 'black', cell.type);
+      });
 
       averagedCameraDirection = averagedCameraDirection.mult(1 - decayfactor).add(this.cameraDirection.mult(decayfactor));
 

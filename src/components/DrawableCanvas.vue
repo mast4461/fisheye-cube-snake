@@ -84,13 +84,31 @@ export default {
       this.ctx.fillRect(0, 0, this.size, this.size);
     },
 
-    fillCell(x, y, color = 'black') {
+    fillCell(x, y, color = 'black', type) {
       const step = this.size / this.sideLength;
+      const halfStep = step / 2;
       this.ctx.fillStyle = color;
 
       const a = x * step;
       const b = y * step;
       this.ctx.fillRect(a, b, step, step);
+
+      const lineColor = 'blue';
+      switch (type) {
+        case 0: {
+          const a0 = a + halfStep;
+          this.drawLine(a0, b, a0, b + step, lineColor);
+          break;
+        }
+        case 1: {
+          const b0 = b + halfStep;
+          this.drawLine(a, b0, a + step, b0, lineColor);
+          break;
+        }
+        default: {
+          break;
+        }
+      }
     },
 
     checker() {

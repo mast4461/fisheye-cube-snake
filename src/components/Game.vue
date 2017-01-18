@@ -3,6 +3,7 @@
   :camera-direction="cameraDirection"
   :side-length="sideLength"
   :head-info="headInfo"
+  :snake-cells="snakeCells"
 ></graphics>
 </template>
 
@@ -49,11 +50,14 @@ function createFaces(s) {
 
 export default {
   data() {
+    const position = new Vec3(-1, 0, 0);
     return {
       faces: createFaces(this.sideLength),
-      position: new Vec3(-1, 0, 0),
+      position,
       velocity: new Vec3(0, 1, 0),
       turnFactor: 0,
+      snakeCells: [],
+      maxLength: 3,
     };
   },
 
@@ -101,6 +105,18 @@ export default {
     },
 
     tick() {
+      this.snakeCells.unshift(this.newCell(
+        this.position.sub(this.velocity),
+        this.position,
+        this.turnFactor,
+      ));
+
+      if (this.snakeCells.length > this.maxLength) {
+        this.snakeCells.pop();
+      }
+
+      console.log(this.snakeCells.map(v => v.position.toString()));
+
       // Calculate new position and velocity
       const navigationResult = this.navigate();
 
@@ -129,6 +145,28 @@ export default {
       return {
         position: pn.round(),
         velocity: vn.round(),
+      };
+    },
+
+    newCell(previousPosition, currentPosition, turnFactor) {
+      const faceIndex = getFaceIndex(currentPosition, this.sideLength);
+      const face = this.faces[faceIndex];
+
+      const p1 = face.project(previousPosition);
+      const p2 = face.project(currentPosition);
+
+      let type = 2;
+      if (turnFactor === 0 && p1.x === p2.x) {
+        type = 0;
+      } else if (turnFactor === 0 && p1.y === p2.y) {
+        type = 1;
+      }
+      return {
+        position: currentPosition,
+        face,
+        faceIndex,
+        projectedPosition: face.project(currentPosition),
+        type,
       };
     },
   },
