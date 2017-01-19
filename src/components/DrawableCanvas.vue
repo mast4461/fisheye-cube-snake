@@ -139,6 +139,10 @@ export default {
         height: v,
       };
     },
+
+    canvas() {
+      return this.$el;
+    },
   },
 
   mounted() {

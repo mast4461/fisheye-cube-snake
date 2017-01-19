@@ -1,10 +1,17 @@
 <template>
-<graphics
-  :camera-direction="cameraDirection"
-  :side-length="sideLength"
-  :head-info="headInfo"
-  :snake-cells="snakeCells"
-></graphics>
+<div>
+  <cube-map
+    ref="cubeMap"
+    :side-length="sideLength"
+    :snake-cells="snakeCells"
+  ></cube-map>
+
+  <fisheye-projection
+    v-if="isMounted"
+    :camera-direction="cameraDirection"
+    :faces="cubeMapFaces"
+  ></fisheye-projection>
+</div>
 </template>
 
 <style>
@@ -12,9 +19,12 @@
 </style>
 
 <script>
+import forEach from 'lodash/forEach';
+
 import Face from '../scripts/Face';
 import Vec3 from '../scripts/Vec3';
-import Graphics from './Graphics';
+import FisheyeProjection from './FisheyeProjection';
+import CubeMap from './CubeMap';
 
 function getFaceIndex(p, s) {
   // Coordinate system centered at corner where faces front, left and bottom meet
@@ -48,22 +58,32 @@ function createFaces(s) {
   ];
 }
 
+function initialState(sideLength) {
+  console.log('Resetting with sideLength:', sideLength);
+
+  const data = {
+    faces: createFaces(sideLength),
+    position: new Vec3(-1, 0, 0),
+    velocity: new Vec3(0, 1, 0),
+    turnFactor: 0,
+    snakeCells: [],
+    maxLength: 3,
+    isMounted: false,
+  };
+
+  return data;
+}
+
 export default {
   data() {
-    return {
-      faces: null,
-      position: null,
-      velocity: null,
-      turnFactor: null,
-      snakeCells: null,
-      maxLength: null,
-    };
+    return initialState(this.sideLength);
   },
 
   props: ['sideLength'],
 
   components: {
-    Graphics,
+    FisheyeProjection,
+    CubeMap,
   },
 
   computed: {
@@ -84,13 +104,8 @@ export default {
       return this.faces[this.faceIndex];
     },
 
-    headInfo() {
-      const faceNames = ['top', 'left', 'front', 'right', 'back', 'bottom'];
-
-      return {
-        face: faceNames[this.faceIndex],
-        position: this.currentFace.project(this.position).asArray(),
-      };
+    cubeMapFaces() {
+      return this.$refs.cubeMap.faces;
     },
   },
 
@@ -114,7 +129,7 @@ export default {
         this.snakeCells.pop();
       }
 
-      console.log(this.snakeCells.map(v => v.position.toString()));
+      // console.log(this.snakeCells.map(v => v.position.toString()));
 
       // Calculate new position and velocity
       const navigationResult = this.navigate();
@@ -125,6 +140,12 @@ export default {
       this.position = navigationResult.position;
       this.velocity = navigationResult.velocity;
       this.turnFactor = 0;
+
+      this.draw();
+    },
+
+    draw() {
+      this.$refs.cubeMap.draw();
     },
 
     navigate() {
@@ -160,6 +181,7 @@ export default {
       } else if (turnFactor === 0 && p1.y === p2.y) {
         type = 1;
       }
+
       return {
         position: currentPosition,
         face,
@@ -169,14 +191,11 @@ export default {
       };
     },
 
-    reset(sideLength = this.sideLength) {
-      console.log('Resetting with sideLength:', sideLength);
-      this.faces = createFaces(sideLength);
-      this.position = new Vec3(-1, 0, 0);
-      this.velocity = new Vec3(0, 1, 0);
-      this.turnFactor = 0;
-      this.snakeCells = [];
-      this.maxLength = 3;
+    reset() {
+      forEach(initialState(this.sideLength), (value, key) => {
+        this[key] = value;
+      });
+      this.isMounted = true;
 
       for (let i = 0; i < this.maxLength; i += 1) {
         this.tick();
@@ -184,8 +203,8 @@ export default {
     },
   },
 
-  created() {
-    this.reset();
+  mounted() {
+    this.reset(this.sideLength);
   },
 
   watch: {

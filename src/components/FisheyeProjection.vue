@@ -1,47 +1,5 @@
 <template>
-<div>
-  <canvas id="webgl-canvas" ref="webgl-canvas"></canvas>
-
-  <table>
-    <tr>
-      <td></td>
-      <td>
-        <p>top</p>
-        <drawable-canvas ref="top" name="top" :side-length="sideLength" color="rgb(254, 161, 11)"></drawable-canvas>
-      </td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>
-        <p>left</p>
-        <drawable-canvas ref="left" name="left" :side-length="sideLength" color="rgb(135, 65, 44)"></drawable-canvas>
-      </td>
-      <td>
-        <p>front</p>
-        <drawable-canvas ref="front" name="front" :side-length="sideLength" color="rgb(4, 71, 29)"></drawable-canvas>
-      </td>
-      <td>
-        <p>right</p>
-        <drawable-canvas ref="right" name="right" :side-length="sideLength" color="rgb(223, 37, 14)"></drawable-canvas>
-      </td>
-      <td>
-        <p>back</p>
-        <drawable-canvas ref="back" name="back" :side-length="sideLength" color="rgb(156, 39, 144)"></drawable-canvas>
-      </td>
-    </tr>
-    <tr>
-      <td></td>
-      <td>
-        <p>bottom</p>
-        <drawable-canvas ref="bottom" name="bottom" :side-length="sideLength" color="rgb(114, 187, 183)"></drawable-canvas>
-      </td>
-      <td></td>
-      <td></td>
-    </tr>
-  </table>
-
-</div>
+<canvas id="webgl-canvas"></canvas>
 </template>
 
 <!-- Add 'scoped' attribute to limit CSS to this component only -->
@@ -63,11 +21,11 @@ table p
  * Based on http://webglfundamentals.org/webgl/lessons/webgl-2-textures.html
  */
 
+import forEach from 'lodash/forEach';
+
 import { loadShader, createProgram, resizeCanvasToDisplaySize } from '../scripts/webgl-utils-remix';
 
 import Vec3 from '../scripts/Vec3';
-
-import DrawableCanvas from './DrawableCanvas';
 
 import fragmentShaderSource from '../shaders/standard.frag';
 import vertexShaderSource from '../shaders/standard.vert';
@@ -132,14 +90,14 @@ function initializePositionAttribute(gl, program) {
   gl.vertexAttribPointer(positionLocation, size, type, normalize, stride, offset);
 }
 
-function initializeGpu(gl) {
+function initializeGpu(gl, faces) {
   const fs = loadShader(gl, fragmentShaderSource, gl.FRAGMENT_SHADER);
   const vs = loadShader(gl, vertexShaderSource, gl.VERTEX_SHADER);
 
   const program = createProgram(gl, [vs, fs]);
   gl.useProgram(program);
 
-  initializeCubemap(gl, program);
+  initializeCubemap(gl, program, faces);
   initializePositionAttribute(gl, program);
 
 
@@ -148,10 +106,23 @@ function initializeGpu(gl) {
   const v2Location = gl.getUniformLocation(program, 'u_v2');
   const v3Location = gl.getUniformLocation(program, 'u_v3');
 
-  return function draw(time, cubeMapSides, cameraDirection) {
+
+  const cubeMapSides = {
+    [gl.TEXTURE_CUBE_MAP_NEGATIVE_X]: faces.left,
+    [gl.TEXTURE_CUBE_MAP_POSITIVE_X]: faces.right,
+    [gl.TEXTURE_CUBE_MAP_NEGATIVE_Y]: faces.bottom,
+    [gl.TEXTURE_CUBE_MAP_POSITIVE_Y]: faces.top,
+    [gl.TEXTURE_CUBE_MAP_NEGATIVE_Z]: faces.back,
+    [gl.TEXTURE_CUBE_MAP_POSITIVE_Z]: faces.front,
+  };
+
+  return function draw(cameraDirection) {
     // Write the image data to the texture
-    cubeMapSides.forEach(([side, image]) => {
-      gl.texImage2D(side, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+
+    forEach(cubeMapSides, (image, sideCode) => {
+      if (image) {
+        gl.texImage2D(sideCode, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+      }
     });
 
     // Set the reference system
@@ -175,52 +146,38 @@ function initializeGpu(gl) {
 }
 
 export default {
-  components: {
-    DrawableCanvas,
+  props: ['cameraDirection', 'faces'],
+
+  data() {
+    return {
+      alive: true,
+    };
   },
 
-  props: ['cameraDirection', 'sideLength', 'headInfo', 'snakeCells'],
-
   mounted() {
-    const gl = this.$refs['webgl-canvas'].getContext('webgl');
+    const gl = this.$el.getContext('webgl');
 
-    const cubeMapSides = [
-      [gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 'left'],
-      [gl.TEXTURE_CUBE_MAP_POSITIVE_X, 'right'],
-      [gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 'bottom'],
-      [gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 'top'],
-      [gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 'back'],
-      [gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 'front'],
-    ];
-
-    const draw = initializeGpu(gl);
-    const loadedCubeMapSides = cubeMapSides.map(([side, ref]) => [side, this.$refs[ref].$el]);
-
-    const dcs = [ // Temporary!!!
-      'top',
-      'left',
-      'front',
-      'right',
-      'back',
-      'bottom',
-    ].map(v => this.$refs[v]);
+    const draw = initializeGpu(gl, this.faces);
 
     let averagedCameraDirection = this.cameraDirection;
     const decayfactor = 0.025;
 
-    const repeatDraw = (time) => {
-      dcs.forEach(dc => dc.reset());
-      this.$refs[this.headInfo.face].fillCell(...this.headInfo.position, 'blue');
-      this.snakeCells.forEach((cell) => {
-        dcs[cell.faceIndex].fillCell(...cell.projectedPosition.asArray(), 'black', cell.type);
-      });
+    const repeatDraw = () => {
+      if (this.alive) {
+        averagedCameraDirection = averagedCameraDirection
+          .mult(1 - decayfactor)
+          .add(this.cameraDirection.mult(decayfactor));
 
-      averagedCameraDirection = averagedCameraDirection.mult(1 - decayfactor).add(this.cameraDirection.mult(decayfactor));
+        draw(averagedCameraDirection);
 
-      draw(time * 4e-4, loadedCubeMapSides, averagedCameraDirection);
-      requestAnimationFrame(repeatDraw);
+        requestAnimationFrame(repeatDraw);
+      }
     };
     requestAnimationFrame(repeatDraw);
+  },
+
+  beforeDestroy() {
+    this.alive = false;
   },
 };
 </script>
