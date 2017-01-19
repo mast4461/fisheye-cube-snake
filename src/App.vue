@@ -5,7 +5,7 @@
 
   <br>
   <label for="side-length">side-length</label>
-  <input type="range" name="side-length" min="1" max="6" step="1" v-model.number="sideLength">
+  <input type="range" name="side-length" min="1" max="10" step="1" v-model.number="sideLength">
   <span>{{sideLength}}</span>
 
   <!-- <button @click="start">start/restart</button> -->
