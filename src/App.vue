@@ -1,8 +1,10 @@
 <template>
-  <div id="app">
-    <!-- <button @click="start">start/restart</button> -->
-    <game ref="game" :side-length="sideLength"></game>
-  </div>
+<div id="app">
+  <input type="checkbox" name="paused" v-model="paused">
+  <label for="paused">paused</label>
+  <!-- <button @click="start">start/restart</button> -->
+  <game ref="game" :side-length="sideLength"></game>
+</div>
 </template>
 
 <script>
@@ -16,34 +18,48 @@ export default {
 
   data() {
     return {
-      sideLength: 4,
+      sideLength: 3,
+      paused: false,
+
+      keyPressHandlers: {
+        // Right arrow
+        39: () => this.$refs.game.turnRight(),
+
+        // Left arrow
+        37: () => this.$refs.game.turnLeft(),
+
+        // Space
+        32: () => { this.paused = !this.paused; },
+      },
     };
   },
 
   methods: {
-    listenForKeys(event) {
-      switch (event.keyCode) {
-        case 39:
-          return this.$refs.game.turnRight();
-        case 37:
-          return this.$refs.game.turnLeft();
-        default:
-          return undefined;
+    keyPressHandler(event) {
+      const func = this.keyPressHandlers[event.keyCode];
+
+      if (func) {
+        func();
+        event.preventDefault();
+      }
+    },
+
+    tick() {
+      if (!this.paused) {
+        this.$refs.game.tick();
       }
     },
   },
 
   mounted() {
     this.$refs.game.tick();
-    this.tickerId = setInterval(() => {
-      this.$refs.game.tick();
-    }, 250);
-    document.addEventListener('keydown', this.listenForKeys);
+    this.tickerId = setInterval(() => this.tick(), 250);
+    document.addEventListener('keydown', this.keyPressHandler);
   },
 
   beforeDestroy() {
     clearInterval(this.tickerId);
-    document.removeEventListener('keydown', this.listenForKeys);
+    document.removeEventListener('keydown', this.keyPressHandler);
   },
 };
 </script>
