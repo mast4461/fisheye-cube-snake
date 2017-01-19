@@ -1,6 +1,8 @@
-# fisheye-web
+# Fisheye Cube Snake
 
-> A version of fisheye rendering with web gl
+> Web based snake game in a cube with 360 degree fisheye perspective
+
+Built with [Vue.js](https://vuejs.org/) and WebGL.
 
 ## Build Setup
 
