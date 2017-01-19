@@ -36,7 +36,7 @@ function createFaces(s) {
   const vx = new Vec3(1, 0, 0);
   const vy = new Vec3(0, 1, 0);
   const vz = new Vec3(0, 0, 1);
-  const vzn = new Vec3(0, 0, -1);
+  const vzn = vz.neg();
 
   return [
     new Face({ sideLength: s, normal: vz.neg(), v: vy }),
@@ -50,14 +50,13 @@ function createFaces(s) {
 
 export default {
   data() {
-    const position = new Vec3(-1, 0, 0);
     return {
-      faces: createFaces(this.sideLength),
-      position,
-      velocity: new Vec3(0, 1, 0),
-      turnFactor: 0,
-      snakeCells: [],
-      maxLength: 3,
+      faces: null,
+      position: null,
+      velocity: null,
+      turnFactor: null,
+      snakeCells: null,
+      maxLength: null,
     };
   },
 
@@ -168,6 +167,31 @@ export default {
         projectedPosition: face.project(currentPosition),
         type,
       };
+    },
+
+    reset(sideLength = this.sideLength) {
+      console.log('Resetting with sideLength:', sideLength);
+      this.faces = createFaces(sideLength);
+      this.position = new Vec3(-1, 0, 0);
+      this.velocity = new Vec3(0, 1, 0);
+      this.turnFactor = 0;
+      this.snakeCells = [];
+      this.maxLength = 3;
+
+      for (let i = 0; i < this.maxLength; i += 1) {
+        this.tick();
+      }
+    },
+  },
+
+  created() {
+    this.reset();
+  },
+
+  watch: {
+    sideLength(sideLength) {
+      console.log('resetting from watcher');
+      this.reset(sideLength);
     },
   },
 };

@@ -24,7 +24,7 @@ export default {
 
   data() {
     return {
-      sideLength: 3,
+      sideLength: 4,
       paused: false,
 
       keyPressHandlers: {
@@ -58,7 +58,6 @@ export default {
   },
 
   mounted() {
-    this.$refs.game.tick();
     this.tickerId = setInterval(() => this.tick(), 250);
     document.addEventListener('keydown', this.keyPressHandler);
   },
