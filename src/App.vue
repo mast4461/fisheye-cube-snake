@@ -1,7 +1,13 @@
 <template>
 <div id="app">
-  <input type="checkbox" name="paused" v-model="paused">
   <label for="paused">paused</label>
+  <input type="checkbox" name="paused" v-model="paused">
+
+  <br>
+  <label for="side-length">side-length</label>
+  <input type="range" name="side-length" min="1" max="6" step="1" v-model.number="sideLength">
+  <span>{{sideLength}}</span>
+
   <!-- <button @click="start">start/restart</button> -->
   <game ref="game" :side-length="sideLength"></game>
 </div>
