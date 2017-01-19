@@ -1,9 +1,5 @@
-
 attribute vec2 a_position;
-attribute vec2 a_texCoord;
-
 uniform vec2 u_resolution;
-
 varying vec2 v_texCoord;
 
 void main() {
@@ -26,5 +22,5 @@ void main() {
 
   // pass the texCoord to the fragment shader
   // The GPU will interpolate this value between points.
-  v_texCoord = a_texCoord / m / vec2(s, s);
+  v_texCoord = a_position / m / vec2(s, s);
 }
