@@ -97,7 +97,7 @@ function initializeGpu(gl, faces) {
   const program = createProgram(gl, [vs, fs]);
   gl.useProgram(program);
 
-  initializeCubemap(gl, program, faces);
+  initializeCubemap(gl, program);
   initializePositionAttribute(gl, program);
 
 

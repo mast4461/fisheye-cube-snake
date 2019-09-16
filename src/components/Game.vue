@@ -67,7 +67,7 @@ function initialState(sideLength) {
     velocity: new Vec3(0, 1, 0),
     turnFactor: 0,
     snakeCells: [],
-    maxLength: 3,
+    maxLength: 12,
     isMounted: false,
   };
 
@@ -94,6 +94,7 @@ export default {
 
     cameraDirection() {
       return this.position.sub(this.cubeCenter).normalize();
+      // return new Vec3(1, 0, 0);
     },
 
     faceIndex() {
@@ -119,18 +120,6 @@ export default {
     },
 
     tick() {
-      this.snakeCells.unshift(this.newCell(
-        this.position.sub(this.velocity),
-        this.position,
-        this.turnFactor,
-      ));
-
-      if (this.snakeCells.length > this.maxLength) {
-        this.snakeCells.pop();
-      }
-
-      // console.log(this.snakeCells.map(v => v.position.toString()));
-
       // Calculate new position and velocity
       const navigationResult = this.navigate();
 
@@ -140,6 +129,16 @@ export default {
       this.position = navigationResult.position;
       this.velocity = navigationResult.velocity;
       this.turnFactor = 0;
+
+      this.snakeCells.unshift(this.newCell(
+        this.position.sub(this.velocity),
+        this.position,
+        this.turnFactor,
+      ));
+
+      if (this.snakeCells.length > this.maxLength) {
+        this.snakeCells.pop();
+      }
 
       this.draw();
     },

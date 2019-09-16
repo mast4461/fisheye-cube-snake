@@ -90,14 +90,31 @@ export default {
   methods: {
     draw() {
       this.drawableCanvases.forEach(dc => dc.reset());
-      this.snakeCells.forEach((cell) => {
-        this.drawableCanvases[cell.faceIndex].fillCell(...cell.projectedPosition.asArray(), 'black', cell.type);
+      // this.snakeCells.forEach((cell) => {
+      //   this.drawableCanvases[cell.faceIndex]
+      //     .fillCell(...cell.projectedPosition.asArray(), 'black', cell.type);
+      // });
+
+      [0, 1, 2, 3, 4, 5].forEach((faceIndex) => {
+        const cells = this.snakeCells.filter(cell => cell.faceIndex === faceIndex);
+        if (cells.length < 1) {
+          return;
+        }
+
+        const face = cells[0].face;
+        const pps = this.snakeCells
+          .filter(cell => cell.position.sub(face.oLogic).dot(face.normal) < 1.5)
+          .map(cell => face.project(cell.position));
+        const drawableCanvas = this.drawableCanvases[faceIndex];
+
+        // cells.forEach((cell) => {
+        //   drawableCanvas.fillCell(...cell.projectedPosition.asArray(), 'black', cell.type);
+        // });
+
+        // console.log(pps);
+        drawableCanvas.drawSnake(pps);
       });
     },
-  },
-
-  watch: {
-
   },
 };
 

@@ -3,7 +3,6 @@ uniform vec2 u_resolution;
 varying vec2 v_texCoord;
 
 void main() {
-
   float s = 2.0;
 
   float w = u_resolution.x;

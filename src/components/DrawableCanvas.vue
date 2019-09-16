@@ -54,16 +54,56 @@ export default {
 
     drawLine(x1, y1, x2, y2, color = '#ccc') {
       this.ctx.strokeStyle = color;
+      this.lineWidth = this.step / 10;
 
       this.ctx.beginPath();
       this.ctx.moveTo(x1, y1);
       this.ctx.lineTo(x2, y2);
-      this.ctx.closePath();
+      // this.ctx.closePath();
       this.ctx.stroke();
     },
 
+    drawMultiline(vec2s) {
+      if (vec2s.length < 1) {
+        return;
+      }
+
+      this.ctx.beginPath();
+
+      this.ctx.moveTo(
+        (vec2s[0].x * this.step) + this.halfStep,
+        (vec2s[0].y * this.step) + this.halfStep
+      );
+      for (let i = 1; i < vec2s.length; i += 1) {
+        this.ctx.lineTo(
+          (vec2s[i].x * this.step) + this.halfStep,
+          (vec2s[i].y * this.step) + this.halfStep
+        );
+      }
+
+      // this.ctx.closePath();
+      this.ctx.stroke();
+    },
+
+    drawSnake(vec2s) {
+      this.ctx.save();
+
+      this.ctx.strokeStyle = '#222';
+      this.ctx.lineWidth = this.halfStep;
+      this.ctx.lineJoin = 'round';
+      this.drawMultiline(vec2s);
+
+      this.ctx.strokeStyle = '#ddd';
+      this.ctx.lineWidth = this.halfStep * 0.5;
+      this.ctx.setLineDash([this.halfStep * 0.2]);
+      this.drawMultiline(vec2s);
+
+      this.ctx.restore();
+    },
+
     drawGrid() {
-      const color = 'rgba(0, 0, 0, 0.1)';
+      this.ctx.lineWidth = this.step / 20;
+      const color = 'rgba(0, 0, 0, 0.4)';
       for (let i = 0; i <= this.sideLength; i += 1) {
         const v = (i / this.sideLength) * this.size;
         this.drawLine(0, v, this.size, v, color);
@@ -85,24 +125,22 @@ export default {
     },
 
     fillCell(x, y, color = 'black', type) {
-      const step = this.size / this.sideLength;
-      const halfStep = step / 2;
       this.ctx.fillStyle = color;
 
-      const a = x * step;
-      const b = y * step;
-      this.ctx.fillRect(a, b, step, step);
+      const a = x * this.step;
+      const b = y * this.step;
+      this.ctx.fillRect(a, b, this.step, this.step);
 
       const lineColor = 'blue';
       switch (type) {
         case 0: {
-          const a0 = a + halfStep;
-          this.drawLine(a0, b, a0, b + step, lineColor);
+          const a0 = a + this.halfStep;
+          this.drawLine(a0, b, a0, b + this.step, lineColor);
           break;
         }
         case 1: {
-          const b0 = b + halfStep;
-          this.drawLine(a, b0, a + step, b0, lineColor);
+          const b0 = b + this.halfStep;
+          this.drawLine(a, b0, a + this.step, b0, lineColor);
           break;
         }
         default: {
@@ -142,6 +180,14 @@ export default {
 
     canvas() {
       return this.$el;
+    },
+
+    step() {
+      return this.size / this.sideLength;
+    },
+
+    halfStep() {
+      return this.step / 2;
     },
   },
 
