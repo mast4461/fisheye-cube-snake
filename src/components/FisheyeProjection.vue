@@ -102,6 +102,7 @@ function initializeGpu(gl, faces) {
 
 
   const resolutionLocation = gl.getUniformLocation(program, 'u_resolution');
+  const zoomLocation = gl.getUniformLocation(program, 'u_zoom');
   const v1Location = gl.getUniformLocation(program, 'u_v1');
   const v2Location = gl.getUniformLocation(program, 'u_v2');
   const v3Location = gl.getUniformLocation(program, 'u_v3');
@@ -116,7 +117,7 @@ function initializeGpu(gl, faces) {
     [gl.TEXTURE_CUBE_MAP_POSITIVE_Z]: faces.front,
   };
 
-  return function draw(cameraDirection) {
+  return function draw(cameraDirection, zoom) {
     // Write the image data to the texture
 
     forEach(cubeMapSides, (image, sideCode) => {
@@ -131,10 +132,11 @@ function initializeGpu(gl, faces) {
     gl.uniform3f(v2Location, ...v2.asArray());
     gl.uniform3f(v3Location, ...v3.asArray());
 
-    // Set the resolution and size
+    // Set the resolution, size and zoom
     gl.uniform2f(resolutionLocation, gl.canvas.width, gl.canvas.height);
     resizeCanvasToDisplaySize(gl.canvas);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    gl.uniform1f(zoomLocation, zoom);
 
     // Clear the canvas
     gl.clearColor(0, 0, 0, 0);
@@ -146,7 +148,7 @@ function initializeGpu(gl, faces) {
 }
 
 export default {
-  props: ['cameraDirection', 'faces'],
+  props: ['cameraDirection', 'faces', 'zoom'],
 
   data() {
     return {
@@ -168,7 +170,7 @@ export default {
           .mult(1 - decayfactor)
           .add(this.cameraDirection.mult(decayfactor));
 
-        draw(averagedCameraDirection);
+        draw(averagedCameraDirection, this.zoom);
 
         requestAnimationFrame(repeatDraw);
       }

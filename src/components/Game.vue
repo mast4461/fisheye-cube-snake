@@ -10,6 +10,7 @@
     v-if="isMounted"
     :camera-direction="cameraDirection"
     :faces="cubeMapFaces"
+    :zoom="zoom"
   ></fisheye-projection>
 </div>
 </template>
@@ -79,7 +80,7 @@ export default {
     return initialState(this.sideLength);
   },
 
-  props: ['sideLength'],
+  props: ['sideLength', 'zoom'],
 
   components: {
     FisheyeProjection,

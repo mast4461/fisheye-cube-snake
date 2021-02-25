@@ -8,8 +8,13 @@
   <input type="range" name="side-length" min="1" max="10" step="1" v-model.number="sideLength">
   <span>{{sideLength}}</span>
 
+  <br>
+  <label for="zoom">zoom</label>
+  <input type="range" name="zoom" min="0" max="2" step="0.0001" v-model.number="zoom">
+  <span>{{zoom}}</span>
+
   <!-- <button @click="start">start/restart</button> -->
-  <game ref="game" :side-length="sideLength"></game>
+  <game ref="game" :side-length="sideLength" :zoom="zoom"></game>
 </div>
 </template>
 
@@ -25,6 +30,7 @@ export default {
   data() {
     return {
       sideLength: 4,
+      zoom: 0,
       paused: false,
 
       keyPressHandlers: {

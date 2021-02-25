@@ -3,8 +3,6 @@ uniform vec2 u_resolution;
 varying vec2 v_texCoord;
 
 void main() {
-  float s = 2.0;
-
   float w = u_resolution.x;
   float h = u_resolution.y;
   vec2 m = vec2(1, 1);
@@ -21,5 +19,5 @@ void main() {
 
   // pass the texCoord to the fragment shader
   // The GPU will interpolate this value between points.
-  v_texCoord = a_position / m / vec2(s, s);
+  v_texCoord = a_position / m;
 }
