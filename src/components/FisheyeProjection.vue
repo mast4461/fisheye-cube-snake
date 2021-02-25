@@ -3,14 +3,15 @@
 </template>
 
 <!-- Add 'scoped' attribute to limit CSS to this component only -->
-<style lang="sass" scoped>
-#webgl-canvas
-  width: 100vw
-  height: 400px
-  display: block
-
-table p
-  margin: 0
+<style scoped>
+#webgl-canvas {
+  width: 100vw;
+  height: 400px;
+  display: block;
+}
+table p {
+  margin: 0;
+}
 </style>
 
 

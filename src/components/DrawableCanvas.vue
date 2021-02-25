@@ -9,10 +9,11 @@
 ></canvas>
 </template>
 
-<style lang="sass" scoped>
-canvas
-  border: 1px solid black
-  cursor: crosshair
+<style scoped>
+canvas {
+  border: 1px solid black;
+  cursor: crosshair;
+}
 </style>
 
 <script>

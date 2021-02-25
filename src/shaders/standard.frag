@@ -41,7 +41,8 @@ void main() {
   vec3 s = vec3(zt) * u_v1 + vec3(xt) * u_v2 + vec3(yt) * u_v3;
 
   // Sample cubemap
-  if (theta < PI) {
-    gl_FragColor = textureCube(u_cubeMap, s.xzy);
-  }
+  gl_FragColor = textureCube(u_cubeMap, s.xzy);
+  // if (theta < PI) {
+  //   gl_FragColor = textureCube(u_cubeMap, s.xzy);
+  // }
 }
